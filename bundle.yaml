@@ -1,0 +1,77 @@
+series: focal
+variables:
+  openstack-origin: &openstack-origin cloud:focal-wallaby
+applications:
+  cinder:
+    charm: cs:cinder
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  cinder-mysql-router:
+    charm: mysql-router
+  glance:
+    charm: cs:glance
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  glance-mysql-router:
+    charm: mysql-router
+  keystone:
+    charm: cs:keystone
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  keystone-mysql-router:
+    charm: mysql-router
+  mysql-innodb-cluster:
+    charm: cs:mysql-innodb-cluster
+    num_units: 3
+  nova-compute:
+    charm: cs:nova-compute
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  openstack-dashboard:
+    charm: cs:openstack-dashboard
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  placement:
+    charm: cs:placement
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  placement-mysql-router:
+    charm: mysql-router
+  rabbitmq-server:
+    charm: rabbitmq-server
+    num_units: 1
+relations:
+- - openstack-dashboard:identity-service
+  - keystone:identity-service
+- - keystone-mysql-router:db-router
+  - mysql-innodb-cluster:db-router
+- - keystone-mysql-router:shared-db
+  - keystone:shared-db
+- - glance:identity-service
+  - keystone:identity-service
+- - glance-mysql-router:db-router
+  - mysql-innodb-cluster:db-router
+- - glance-mysql-router:shared-db
+  - glance:shared-db
+- - cinder:identity-service
+  - keystone:identity-service
+- - cinder-mysql-router:db-router
+  - mysql-innodb-cluster:db-router
+- - cinder-mysql-router:shared-db
+  - cinder:shared-db
+- - placement:identity-service
+  - keystone:identity-service
+- - placement-mysql-router:db-router
+  - mysql-innodb-cluster:db-router
+- - placement-mysql-router:shared-db
+  - placement:shared-db
+- - cinder:amqp
+  - rabbitmq-server:amqp
+- - nova-compute:amqp
+  - rabbitmq-server:amqp
