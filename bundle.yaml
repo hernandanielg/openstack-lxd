@@ -7,30 +7,25 @@ applications:
     num_units: 1
     options:
       openstack-origin: *openstack-origin
-  cinder-mysql-router:
-    charm: mysql-router
   glance:
     charm: cs:glance
     num_units: 1
     options:
       openstack-origin: *openstack-origin
-  glance-mysql-router:
-    charm: mysql-router
   keystone:
     charm: cs:keystone
     num_units: 1
     options:
       openstack-origin: *openstack-origin
-  keystone-mysql-router:
-    charm: mysql-router
-  mysql-innodb-cluster:
-    charm: cs:mysql-innodb-cluster
-    num_units: 3
+  mysql:
+    charm: cs:percona-cluster
+    series: bionic
+    num_units: 1
   nova-cloud-controller:
     charm: cs:nova-cloud-controller
     num_units: 1
-  nova-cloud-controller-mysql-router:
-    charm: mysql-router
+    options:
+      openstack-origin: *openstack-origin
   nova-compute:
     charm: cs:nova-compute
     num_units: 1
@@ -46,35 +41,25 @@ applications:
     num_units: 1
     options:
       openstack-origin: *openstack-origin
-  placement-mysql-router:
-    charm: mysql-router
   rabbitmq-server:
     charm: rabbitmq-server
     num_units: 1
 relations:
 - - openstack-dashboard:identity-service
   - keystone:identity-service
-- - keystone-mysql-router:db-router
-  - mysql-innodb-cluster:db-router
-- - keystone-mysql-router:shared-db
+- - mysql:shared-db
   - keystone:shared-db
 - - glance:identity-service
   - keystone:identity-service
-- - glance-mysql-router:db-router
-  - mysql-innodb-cluster:db-router
-- - glance-mysql-router:shared-db
+- - mysql:shared-db
   - glance:shared-db
 - - cinder:identity-service
   - keystone:identity-service
-- - cinder-mysql-router:db-router
-  - mysql-innodb-cluster:db-router
-- - cinder-mysql-router:shared-db
+- - mysql:shared-db
   - cinder:shared-db
 - - placement:identity-service
   - keystone:identity-service
-- - placement-mysql-router:db-router
-  - mysql-innodb-cluster:db-router
-- - placement-mysql-router:shared-db
+- - mysql:shared-db
   - placement:shared-db
 - - cinder:amqp
   - rabbitmq-server:amqp
@@ -88,10 +73,8 @@ relations:
   - nova-cloud-controller:placement
 - - nova-cloud-controller:cloud-compute
   - nova-compute:cloud-compute
-- - nova-cloud-controller-mysql-router:shared-db
+- - mysql:shared-db
   - nova-cloud-controller:shared-db
-- - nova-cloud-controller-mysql-router:db-router
-  - mysql-innodb-cluster:db-router
 - - nova-cloud-controller:image-service
   - glance:image-service
 - - nova-compute:image-service
