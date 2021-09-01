@@ -3,7 +3,7 @@
 ## Edit LXD profile
 
 ```
-cat lxd-profile.yaml | lxd edit profile juju-default
+cat lxd-profile.yaml | lxc profile edit juju-default
 ```
 
 ## Deploy bundle
