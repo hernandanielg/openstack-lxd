@@ -1,0 +1,124 @@
+series: focal
+variables:
+  openstack-origin: &openstack-origin cloud:focal-wallaby
+applications:
+  ceilometer:
+    charm: cs:ceilometer
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  ceilometer-agent:
+    charm: cs:ceilometer-agent
+  ceph-mon:
+    series: bionic
+    charm: cs:ceph-mon
+    num_units: 3
+    options:
+      expected-osd-count: 3
+      source: cloud:bionic-stein
+  ceph-osd:
+    series: bionic
+    charm: cs:ceph-osd
+    num_units: 3
+    options:
+      osd-devices: /srv/osd
+      use-direct-io: False
+      source: cloud:bionic-stein
+      bluestore: False
+  ceph-radosgw:
+    series: bionic
+    charm: cs:ceph-radosgw
+    num_units: 1
+    options:
+      source: cloud:bionic-stein
+  cinder-ceph:
+    charm: cs:cinder-ceph
+    num_units: 0
+  designate:
+    charm: cs:designate
+    num_units: 1
+    options:
+      nameservers: 'ns1.example.com ns2.example.com'
+      openstack-origin: *openstack-origin
+  designate-bind:
+    charm: cs:designate-bind
+    num_units: 1
+  gnocchi:
+    charm: cs:gnocchi
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  memcached:
+    charm: cs:memcached
+    num_units: 1
+  placement:
+    charm: cs:placement
+    num_units: 1
+    options:
+      worker-multiplier: 0.1
+      openstack-origin: *openstack-origin
+  openstack-dashboard:
+    charm: cs:openstack-dashboard
+    num_units: 1
+    options:
+      openstack-origin: *openstack-origin
+  rabbitmq-server:
+    charm: cs:rabbitmq-server
+    num_units: 1
+relations:
+- - cinder-ceph:storage-backend
+  - cinder:storage-backend
+- - ceph-mon:client
+  - nova-compute:ceph
+- - nova-compute:ceph-access
+  - cinder-ceph:ceph-access
+- - ceph-mon:client
+  - cinder-ceph:ceph
+- - ceph-mon:client
+  - glance:ceph
+- - ceph-osd:mon
+  - ceph-mon:osd
+- - ceph-radosgw:mon
+  - ceph-mon:radosgw
+- - ceph-radosgw:identity-service
+  - keystone:identity-service
+- - vault:certificates
+  - ceph-radosgw:certificates
+- - designate:dns-backend
+  - designate-bind:dns-backend
+- - designate:identity-service
+  - keystone:identity-service
+- - designate:shared-db
+  - mysql:shared-db
+- - designate:amqp
+  - rabbitmq-server:amqp
+- - memcached:cache
+  - designate:coordinator-memcached
+- - ceilometer:certificates
+  - vault:certificates
+- - ceilometer:identity-service
+  - keystone:identity-service
+- - ceilometer:amqp
+  - rabbitmq-server:amqp
+- - ceilometer-agent:ceilometer-service
+  - ceilometer:ceilometer-service
+- - ceilometer:identity-notifications
+  - keystone:identity-notifications
+- - ceilometer-agent:nova-ceilometer
+  - nova-compute:nova-ceilometer
+- - ceilometer-agent:amqp
+  - rabbitmq-server:amqp
+- - gnocchi:storage-ceph
+  - ceph-mon:client
+- - gnocchi:shared-db
+  - mysql:shared-db
+- - gnocchi:amqp
+  - rabbitmq-server:amqp
+- - gnocchi:coordinator-memcached
+  - memcached:cache
+- - gnocchi:metric-service
+  - ceilometer:metric-service
+- - gnocchi:identity-service
+  - keystone:identity-service
+- - ceilometer:identity-credentials
+  - keystone:identity-credentials
