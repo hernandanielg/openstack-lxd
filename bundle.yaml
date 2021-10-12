@@ -1,7 +1,7 @@
 series: focal
 variables:
   openstack-origin: &openstack-origin cloud:focal-wallaby
-  data-port: &data-port br-ex:eth1
+  data-port: &data-port br-data:eth1
 applications:
   cinder:
     charm: cs:cinder
@@ -76,7 +76,7 @@ applications:
   ovn-chassis:
     charm: cs:ovn-chassis
     options:
-      ovn-bridge-mappings: physnet1:br-ex
+      ovn-bridge-mappings: physnet1:br-data
       bridge-interface-mappings: *data-port
   vault:
     charm: cs:vault
